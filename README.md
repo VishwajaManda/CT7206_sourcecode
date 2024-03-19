@@ -293,3 +293,84 @@ plt.xlabel('Categories')
 plt.ylabel('Frequency')
 plt.xticks(rotation=45)
 plt.show()
+
+# Create a pie chart to visualize the distribution of the categorical variable
+plt.figure(figsize=(8, 8))
+plt.pie(categorical_counts, labels=categorical_counts.index, autopct='%1.1f%%', startangle=140, colors=plt.cm.tab20.colors)
+plt.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
+plt.title('Distribution of Categories')
+plt.show()
+
+# perform Product Performance Analysis and identify top-selling products based on 
+#the number of units sold or revenue generated, as well as analyze product categories and 
+#subcategories to understand sales patterns
+
+# Identify top-selling products based on the number of units sold
+top_products_by_units_sold = df.groupby('title')['sales_volume'].sum().sort_values(ascending=False).head(10)
+
+# Identify top-selling products based on revenue generated
+df['revenue'] = df['sales_volume'] * df['price']
+top_products_by_revenue = df.groupby('title')['revenue'].sum().sort_values(ascending=False).head(10)
+
+# Analyze product categories and subcategories to understand sales patterns
+category_sales = df.groupby(['leve_1_category_name', 'leve_2_category_name'])['sales_volume'].sum().unstack().fillna(0)
+
+# Plotting the top-selling products and category sales
+plt.figure(figsize=(15, 10))
+
+plt.subplot(2, 1, 1)
+top_products_by_units_sold.plot(kind='bar', color='skyblue')
+plt.title('Top Selling Products by Units Sold')
+plt.xlabel('Product Title')
+plt.ylabel('Total Units Sold')
+
+plt.subplot(2, 2, 3)
+top_products_by_revenue.plot(kind='bar', color='salmon')
+plt.title('Top Selling Products by Revenue Generated')
+plt.xlabel('Product Title')
+plt.ylabel('Total Revenue Generated')
+
+plt.subplot(2, 2, 4)
+category_sales.plot(kind='bar', stacked=True)
+plt.title('Sales Volume by Category and Subcategory')
+plt.xlabel('Category')
+plt.ylabel('Total Sales Volume')
+
+plt.tight_layout()
+plt.show()
+
+#Customer Segmentation based on purchasing behavior and conduct clustering analysis 
+#to group customers with similar characteristics, you can use Python with libraries such as 
+#pandas, scikit-learn, and matplotlib. 
+#Below is a sample code snippet that demonstrates how to achieve this analysis using K-means clustering: 
+
+import pandas as pd
+import numpy as np
+from sklearn.cluster import KMeans
+from sklearn.preprocessing import StandardScaler
+import matplotlib.pyplot as plt
+
+# Calculate total spending per customer
+df['total_spending'] = df['sales_volume'] * df['price']
+
+# Aggregate data at the customer level based on available columns
+customer_data = df.groupby(['leve_1_category_name', 'leve_2_category_name']).agg({
+    'sales_volume': 'sum',
+    'total_spending': 'sum'
+}).reset_index()
+
+# Standardize the data
+scaler = StandardScaler()
+customer_data_scaled = scaler.fit_transform(customer_data[['sales_volume', 'total_spending']])
+
+# Perform K-means clustering
+kmeans = KMeans(n_clusters=3, random_state=42)
+customer_data['cluster'] = kmeans.fit_predict(customer_data_scaled)
+
+# Visualize the clusters
+plt.figure(figsize=(10, 6))
+plt.scatter(customer_data['sales_volume'], customer_data['total_spending'], c=customer_data['cluster'], cmap='viridis', s=50)
+plt.xlabel('Total Sales Volume')
+plt.ylabel('Total Spending')
+plt.title('Customer Segmentation based on Purchasing Behavior')
+plt.show()
